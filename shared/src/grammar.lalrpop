@@ -1,0 +1,132 @@
+use crate::*;
+use crate::parser::*;
+
+grammar;
+
+pub Strip: Exprs<'input> = <Exp*> => <>;
+
+Ident: &'input str = r"[A-z][/./_A-z0-9]+" => <>;
+String: &'input str = "\"" <ident:Ident> "\"" => ident;
+Label: &'input str = <ident:Ident> ":" => ident;
+
+Comment: &'input str = {
+  r"#.*" => <>,
+  r"//.*" => <>,
+};
+
+NumLit: i64 = {
+  r"-?[0-9]+" => i32::from_str_radix(<>, 10).unwrap() as i64,
+  <num:r"0b[01]+"> => u64::from_str_radix(&num[2..], 2).unwrap() as i64,
+  <num:r"0x[a-f0-9]+"> => u64::from_str_radix(&num[2..], 16).unwrap() as i64,
+};
+
+Addr: Address<'input> = {
+  <offset:NumLit> => Address::new(Reg::X0, offset as i16, None),
+  "(" <reg:Reg> ")" => Address::new(reg, 0, None),
+  <offset:NumLit> "(" <reg:Reg> ")" => Address::new(reg, offset as i16, None),
+  <ident:Ident> => Address::new(Reg::X0, 0, Some(ident)),
+  <ident:Ident> "(" <reg:Reg> ")" => Address::new(reg, 0, Some(ident)),
+};
+
+Exp: Exp<'input> = {
+  Dir => Exp::Directive(<>),
+  Comment => Exp::Comment(<>),
+  Label => Exp::Label(<>),
+  Op => Exp::Word(<>),
+};
+
+Dir: Directive<'input> = {
+  ".equ" <ident:Ident> <imm:NumLit> => Directive::Constant(ident, imm as i16),
+  ".zero" <num:NumLit> => Directive::Zero(num as i16),
+  ".byte" <num:NumLit*> => Directive::Byte(num.iter().map(|i| *i as u8).collect()),
+  ".half" <num:NumLit*> => Directive::Half(num.iter().map(|i| *i as u16).collect()),
+  ".word" <num:NumLit*> => Directive::Word(num.iter().map(|i| *i as u32).collect()),
+  ".string" <s:String> => Directive::Byte(s.as_bytes().to_vec()),
+  ".incbin" <f:String> => Directive::IncBin(f),
+};
+
+Op: Word<'input> = {
+  <op:Op1RA> <r1:Reg> <addr:Addr> => Word::new(op, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  <op:Op2RA> <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(op, r1, r2, Reg::X0, 0, Some(addr)),
+  <op:Op3R> <r1:Reg> <r2:Reg> <r3:Reg> => Word::new(op, r1, r2, r3, 0, None),
+  PseudoOp => <>
+}
+
+PseudoOp: Word<'input> = {
+  "nop" => Word::new(Opcode::ADDI, Reg::X0, Reg::X0, Reg::X0, 0, None),
+  "j" <addr:Addr> => Word::new(Opcode::BEQ, Reg::X0, Reg::X0, Reg::X0, 0, Some(addr)),
+  "inc" <r1:Reg> => Word::new(Opcode::ADDI, r1, r1, Reg::X0, 1, None),
+  "dec" <r1:Reg> => Word::new(Opcode::ADDI, r1, r1, Reg::X0, -1, None),
+  "li" <r1:Reg> <addr:Addr> => Word::new(Opcode::ADDI, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  "mv" <r1:Reg> <r2:Reg> => Word::new(Opcode::ADDI, r1, r2, Reg::X0, 0, None),
+  "bgt" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BLT, r2, r1, Reg::X0, 0, Some(addr)),
+  "ble" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BGE, r2, r1, Reg::X0, 0, Some(addr)),
+  "bgtu" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BLTU, r2, r1, Reg::X0, 0, Some(addr)),
+  "bleu" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BGEU, r2, r1, Reg::X0, 0, Some(addr)),
+  "beqz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BEQ, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  "bnez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BNE, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  "blez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BGE, Reg::X0, r1, Reg::X0, 0, Some(addr)),
+  "bgez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BGE, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  "bltz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BLT, r1, Reg::X0, Reg::X0, 0, Some(addr)),
+  "bgtz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BLT, Reg::X0, r1, Reg::X0, 0, Some(addr)),
+  "not"  <r1:Reg> <r2:Reg> => Word::new(Opcode::XORI, r1, r2, Reg::X0, -1, None),
+  "seqz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLTIU, r1, r2, Reg::X0, 1, None),
+  "snez" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLTU, r1, Reg::X0, r2, 0, None),
+  "sltz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLT, r1, r2, Reg::X0, 0, None),
+  "sgtz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLT, r1, Reg::X0, r2, 0, None),
+  "neg"  <r1:Reg> <r2:Reg> => Word::new(Opcode::SUB, r1, Reg::X0, r2, 0, None),
+}
+
+Op1RA: Opcode = {
+  "lui" => Opcode::LUI,
+  "lb" => Opcode::LB,
+  "lbu" => Opcode::LBU,
+  "lh" => Opcode::LH,
+  "lhu" => Opcode::LHU,
+  "lw" => Opcode::LW,
+  "sb" => Opcode::SB,
+  "sh" => Opcode::SH,
+  "sw" => Opcode::SW,
+};
+
+Op2RA: Opcode = {
+  "addi" => Opcode::ADDI,
+  "ori" => Opcode::ORI,
+  "andi" => Opcode::ANDI,
+  "xori" => Opcode::XORI,
+  "slli" => Opcode::SLLI,
+  "srli" => Opcode::SRLI,
+  "beq" => Opcode::BEQ,
+  "bne" => Opcode::BNE,
+  "bge" => Opcode::BGE,
+  "blt" => Opcode::BLT,
+  "bgeu" => Opcode::BGEU,
+  "bltu" => Opcode::BLTU,
+  "sltiu" => Opcode::SLTIU,
+};
+
+Op3R: Opcode = {
+  "add" => Opcode::ADD,
+  "and" => Opcode::AND,
+  "mul" => Opcode::MUL,
+  "or" => Opcode::OR,
+  "sll" => Opcode::SLL,
+  "slt" => Opcode::SLT,
+  "sltu" => Opcode::SLTU,
+  "sra" => Opcode::SRA,
+  "srl" => Opcode::SRL,
+  "sub" => Opcode::SUB,
+  "xor" => Opcode::XOR,
+};
+
+Reg: Reg = {
+  "zero" => Reg::X0,
+  "x0" => Reg::X0,
+  "x1" => Reg::X1,
+  "x2" => Reg::X2,
+  "x3" => Reg::X3,
+  "x4" => Reg::X4,
+  "x5" => Reg::X5,
+  "x6" => Reg::X6,
+  "x7" => Reg::X7,
+};
