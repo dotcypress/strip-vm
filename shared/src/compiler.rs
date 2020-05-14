@@ -77,11 +77,13 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
   prog.extend(&mem);
 
   let mut buf = [0; 4];
-  for op in &ops {
+  for (pc, op) in ops.iter().enumerate() {
     let (r3, imm) = if let Some(addr) = &op.addr {
       let mut offset = addr.offset;
       if let Some(ident) = addr.ident {
-        if let Some(constant) = consts.get(ident) {
+        if ident == "pc" {
+          offset += pc as i16;
+        } else if let Some(constant) = consts.get(ident) {
           offset += constant;
         } else if let Some(label) = labels.get(ident) {
           offset += label;

@@ -1,34 +1,36 @@
 # Strip size: 300 LED's
-# Core clock: 48MHz
-# Frame ops:         3608,  vm clk: 450KHz
-# SPI Transfer time: 7246us,   fps: 136Hz
-# Frame render time: 8023us,   fps: 124Hz
-# Total frame time:  15269us,  fps: 65Hz
+# SPI transfer time: 7.246us,  max fps: 136Hz
+# VM spin time:      8.216us,  max fps: 126Hz
+# Total:             15.451us, max fps: 64Hz
 
-.equ STRIP_SIZE  900 # 300 leds * 3 color components
-.equ STRIP_BASE  0x1000
+.equ STRIP_SIZE 900 # leds * 3 color components
+.equ STRIP_BASE 0x1000
+.equ PRESCALER 24
 
-li x2 STRIP_SIZE
-beqz x1 reset
-j next
+ecall ra PRESCALER
+j start
 
 reset:
-  li x1 STRIP_SIZE
-  dec x1
-  li x3 0x22
+  li s0 STRIP_SIZE
+  dec s0
+  li s2 0x22
 
-next:
-  dec x2
-  bne x1 x2 off
+start:
+  li s1 STRIP_SIZE
+  bltz s0 reset
+
+loop:
+  dec s1
+  bne s0 s1 off
 
 on:
-  sb x3 STRIP_BASE(x2)
-  j done
+  sb s2 STRIP_BASE(s1)
+  j until
 
 off:
-  sb x0 STRIP_BASE(x2)
+  sb zero STRIP_BASE(s1)
 
-done:
-  bnez x2 next
+until:
+  bnez s1 loop
 
-dec x1
+dec s0

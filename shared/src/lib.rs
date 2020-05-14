@@ -15,20 +15,20 @@ pub enum Error {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Reg {
-  X0 = 0,
-  X1 = 1,
-  X2 = 2,
-  X3 = 3,
-  X4 = 4,
-  X5 = 5,
-  X6 = 6,
-  X7 = 7,
+  Zero = 0,
+  RA = 1,
+  S0 = 2,
+  S1 = 3,
+  S2 = 4,
+  S3 = 5,
+  S4 = 6,
+  S5 = 7,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Opcode {
   ADDI = 0,
-  ADD = 9,
+  ADD,
   AND,
   ANDI,
   BEQ,
@@ -37,6 +37,8 @@ pub enum Opcode {
   BLT,
   BLTU,
   BNE,
+  ECALL,
+  LA,
   LB,
   LBU,
   LH,

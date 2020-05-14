@@ -57,6 +57,11 @@ fn main() -> io::Result<()> {
             .short("spins")
             .default_value("1")
             .help("Sets VM spins"),
+        )
+        .arg(
+          Arg::with_name("MAX_OPS")
+            .short("ops")
+            .help("Sets VM ops quota"),
         ),
     );
 
@@ -85,7 +90,10 @@ fn main() -> io::Result<()> {
       let spins = u16::from_str_radix(args.value_of("SPINS").unwrap(), 10).unwrap();
       let ram = u16::from_str_radix(args.value_of("RAM").unwrap(), 10).unwrap();
       let trace_mem = args.is_present("MEMORY");
-      let mut trace = Trace::new(spins, ram, trace_mem, &bytecode).unwrap();
+      let max_ops = args
+        .value_of("MAX_OPS")
+        .map(|s| u32::from_str_radix(s, 10).unwrap());
+      let mut trace = Trace::new(spins, max_ops, ram, trace_mem, &bytecode).unwrap();
       trace.start().unwrap();
     }
     _ => {

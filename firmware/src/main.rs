@@ -35,7 +35,7 @@ const APP: () = {
     let mut rcc = ctx.device.RCC.freeze(rcc_cfg);
 
     let mut timer = ctx.device.TIM17.timer(&mut rcc);
-    timer.start(256.hz());
+    timer.start(1024.hz());
     timer.listen();
 
     let port_a = ctx.device.GPIOA.split(&mut rcc);
@@ -52,7 +52,7 @@ const APP: () = {
       strip.refresh();
     });
     let max_fps: Hertz = elapsed_us.into();
-    cortex_m_semihosting::hprintln!("vm sin: {}us, max fps: {}Hz", elapsed_us.0, max_fps.0)
+    cortex_m_semihosting::hprintln!(">>> spin: {}us, max fps: {}Hz", elapsed_us.0, max_fps.0)
       .unwrap();
 
     init::LateResources { timer, strip }

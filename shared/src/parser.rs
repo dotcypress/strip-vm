@@ -8,7 +8,7 @@ pub type Parser = grammar::StripParser;
 
 pub fn parse(code: &str) -> Result<Exprs, Error> {
   Parser::new().parse(code).map_err(|err| {
-    println!("{:?}", err);
+    println!(">>{:?}", err);
     Error::ParseError
   })
 }
