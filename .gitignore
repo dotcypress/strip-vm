@@ -1,2 +1,5 @@
-**/target
+target
 **/*.rs.bk
+rtl/*.gprj.user
+rtl/impl/pnr
+rtl/impl/synthesize
