@@ -86,3 +86,49 @@ Instruction          | Expansion           | Description
 `ble  rs  rt offset` | `bge rt rs offset`  | Branch if <= ; ra <- pc + 1
 `bgtu rs  rt offset` | `bltu rt rs offset` | Branch if >, unsigned ; ra <- pc + 1
 `bleu rs  rt offset` | `bltu rt rs offset` | Branch if <=, unsigned ; ra <- pc + 1
+
+### Instruction layout
+
+Imm       | rs2       | rs1       | rd      | Opcode 
+----------|-----------|-----------|---------|--------
+`[31:16]` | `[15:13]` | `[12:10]` | `[9:7]` | `[6:0]`
+
+### Opcode layout
+
+Func | R | B | I | Opcode
+-----| --|---|---|--------
+0000 | 0 | 0 | 0 | `ADD`
+0000 | 0 | 0 | 1 | `ADDI`
+0000 | 1 | 0 | 0 | `LA`
+0000 | 1 | 0 | 1 | `LUI`
+0001 | 0 | 0 | 0 | `AND`
+0001 | 0 | 0 | 1 | `ANDI`
+0010 | 0 | 0 | 0 | `OR`
+0010 | 0 | 0 | 1 | `ORI`
+0011 | 0 | 0 | 0 | `XOR`
+0011 | 0 | 0 | 1 | `XORI`
+0100 | 0 | 0 | 0 | `SLL`
+0100 | 0 | 0 | 1 | `SLLI`
+0101 | 0 | 0 | 0 | `SRL`
+0101 | 0 | 0 | 1 | `SRLI`
+0110 | 0 | 0 | 0 | `SRA`
+0111 | 0 | 0 | 0 | `SUB`
+1000 | 0 | 0 | 0 | `MUL`
+1000 | 0 | 0 | 1 | `ECALL`
+1001 | 0 | 0 | 0 | `SLT`
+1001 | 0 | 1 | 0 | `BLT`
+1010 | 0 | 0 | 0 | `SLTU`
+1010 | 0 | 0 | 1 | `SLTIU`
+1010 | 0 | 1 | 0 | `BLTU`
+1011 | 0 | 1 | 0 | `BEQ`
+1100 | 0 | 1 | 0 | `BNE`
+1101 | 0 | 1 | 0 | `BGE`
+1110 | 0 | 1 | 0 | `BGEU`
+1111 | 0 | 0 | 0 | `SB`
+1111 | 0 | 0 | 1 | `SH`
+1111 | 0 | 1 | 0 | `SW`
+1111 | 0 | 1 | 1 | `LBU`
+1111 | 1 | 0 | 0 | `LB`
+1111 | 1 | 0 | 1 | `LH`
+1111 | 1 | 1 | 0 | `LW`
+1111 | 1 | 1 | 1 | `LHU`

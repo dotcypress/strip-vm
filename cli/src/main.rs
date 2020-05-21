@@ -61,6 +61,7 @@ fn main() -> io::Result<()> {
         .arg(
           Arg::with_name("MAX_OPS")
             .short("ops")
+            .takes_value(true)
             .help("Sets VM ops quota"),
         ),
     );

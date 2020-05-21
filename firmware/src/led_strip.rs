@@ -34,15 +34,7 @@ where
       return;
     }
     env.ops = 0;
-    self.vm.rewind();
-    loop {
-      match self.vm.step() {
-        Ok(true) | Err(_) => {
-          break;
-        }
-        _ => {}
-      }
-    }
+    self.vm.respin().ok();
     self
       .link
       .write(self.vm.get_env().led_ram.as_rgb().iter().cloned())

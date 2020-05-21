@@ -64,7 +64,7 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
     }
   }
 
-  if ops.len() == 0 {
+  if ops.is_empty() {
     return Ok(vec![]);
   }
 
