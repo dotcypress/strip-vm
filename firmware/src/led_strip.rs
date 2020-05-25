@@ -98,8 +98,10 @@ impl Env for Environment {
     Ok(())
   }
 
-  fn ecall(&mut self, sys_call: i32) -> Result<i32, Self::Error> {
-    self.psc = sys_call as u32;
+  fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
+    if ecall == 0 {
+      self.psc = param as u32;
+    }
     Ok(0)
   }
 }

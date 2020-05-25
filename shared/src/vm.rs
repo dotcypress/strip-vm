@@ -7,7 +7,7 @@ pub trait Env {
   fn reset(&mut self);
   fn mem_set(&mut self, addr: u16, val: &[u8]) -> Result<(), Self::Error>;
   fn mem_fetch(&self, addr: u16, buf: &mut [u8]) -> Result<(), Self::Error>;
-  fn ecall(&mut self, sys_call: i32) -> Result<i32, Self::Error>;
+  fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error>;
 }
 
 #[derive(Debug)]
@@ -32,7 +32,7 @@ impl<'prog, E: Env> VM<'prog, E> {
       prog: None,
     }
   }
-  
+
   pub fn reset(&mut self) {
     self.rewind();
     self.reg = Default::default();
@@ -46,6 +46,13 @@ impl<'prog, E: Env> VM<'prog, E> {
 
   pub fn get_env(&mut self) -> &mut E {
     &mut self.env
+  }
+  pub fn get_reg(&mut self) -> &mut [i32; 8] {
+    &mut self.reg
+  }
+
+  pub fn get_pc(&mut self) -> &mut usize {
+    &mut self.pc
   }
 
   pub fn load(&mut self, prog: &'prog [u8]) -> Result<(), VMError> {
@@ -71,8 +78,10 @@ impl<'prog, E: Env> VM<'prog, E> {
     };
     let res = match opcode {
       Opcode::ECALL => {
-        let arg = imm + self.reg[rs2];
-        let res = self.env.ecall(arg).map_err(|_| VMError::EnvFault)?;
+        let res = self
+          .env
+          .ecall(imm, self.reg[rs2])
+          .map_err(|_| VMError::EnvFault)?;
         Some(res)
       }
       Opcode::BEQ => {
@@ -271,8 +280,22 @@ impl<'prog, E: Env> VM<'prog, E> {
 #[cfg(feature = "std")]
 impl<E: Env + core::fmt::Debug> core::fmt::Debug for VM<'_, E> {
   fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    fn fmt_reg(reg: usize) -> String {
+      match reg {
+        0 => "r0".to_string(),
+        1 => "ra".to_string(),
+        x => format!("s{}", x - 2),
+      }
+    };
     let op = match self.current_op() {
-      Some(op) => format!("{:?} r{} r{} r{} {}", op.0, op.1, op.2, op.3, op.4),
+      Some(op) => format!(
+        "{:?} {} {} {} {}",
+        op.0,
+        fmt_reg(op.1),
+        fmt_reg(op.2),
+        fmt_reg(op.3),
+        op.4
+      ),
       None => String::from("HALTED"),
     };
     write!(

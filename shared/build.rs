@@ -2,6 +2,6 @@
 extern crate lalrpop;
 
 fn main() {
-    #[cfg(feature = "std")]
-    lalrpop::process_root().unwrap();
+  #[cfg(feature = "std")]
+  lalrpop::process_root().unwrap();
 }
