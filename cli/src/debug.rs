@@ -83,7 +83,7 @@ impl Env for Environment {
   fn mem_set(&mut self, addr: u16, val: &[u8]) -> Result<(), Self::Error> {
     let offset = addr as usize;
     if self.trace_memory {
-      println!("MEM  STORE  0x{:x} {:?}", offset, val);
+      println!("MEM  SET    0x{:x} {:?}", offset, val);
     }
     if offset >= 0x1000 {
       return Ok(());
@@ -96,7 +96,8 @@ impl Env for Environment {
     Ok(())
   }
 
-  fn ecall(&mut self, _sys_call: i32) -> Result<i32, Self::Error> {
+  fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
+    println!("ECALL       0x{:x}(0x{:x?})", ecall, param);
     Ok(0)
   }
 }

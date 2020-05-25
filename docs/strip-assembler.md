@@ -42,23 +42,23 @@ Instruction            | Description
 `bgeu  rs  rt  offset` | Branch if >=, unsigned ; ra <- pc + 1
 `bltu  rs  rt  offset` | Branch if <, unsigned ; ra <- pc + 1
 `add   rd  rs1 rs2`    | `rd = rs1 + rs2`
+`addi  rd  rs1 imm`    | `rd = rs1 + imm`
 `and   rd  rs1 rs2`    | `rd = rs1 & rs2`
+`andi  rd  rs1 imm`    | `rd = rs1 & imm`
 `mul   rd  rs1 rs2`    | `rd = rs1 * rs2`
 `or    rd  rs1 rs2`    | `rd = rs1 \| rs2`
+`ori   rd  rs1 imm`    | `rd = rs1 \| imm`
+`sll   rd  rs1 rs2`    | `rd = rs1 << rs2`
+`slli  rd  rs1 imm`    | `rd = rs1 << imm`
+`slt   rd  rs1 rs2`    | `rd = rs1 < rs2`
+`sltiu rd  rs1 imm`    | `rd = rs1 < imm`, unsigned
+`sltu  rd  rs1 rs2`    | `rd = rs1 < rs2`, unsigned
+`sra   rd  rs1 rs2`    | `rd = rs1 >>> rs2`
+`srl   rd  rs1 rs2`    | `rd = rs1 >> rs2`
+`srli  rd  rs1 imm`    | `rd = rs1 >> imm`
 `sub   rd  rs1 rs2`    | `rd = rs1 - rs2`
 `xor   rd  rs1 rs2`    | `rd = rs1 ^ rs2`
-`sll   rd  rs1 rs2`    | `rd = rs1 << rs2`
-`srl   rd  rs1 rs2`    | `rd = rs1 >> rs2`
-`sra   rd  rs1 rs2`    | `rd = rs1 >>> rs2`
-`slt   rd  rs1 rs2`    | `rd = rs1 < rs2`
-`sltu  rd  rs1 rs2`    | `rd = rs1 < rs2`, unsigned
-`sltiu rd  rs1 imm`    | `rd = rs1 ^ imm`, unsigned
-`addi  rd  rs1 imm`    | `rd = rs1 + imm`
-`ori   rd  rs1 imm`    | `rd = rs1 \| imm`
-`andi  rd  rs1 imm`    | `rd = rs1 & imm`
 `xori  rd  rs1 imm`    | `rd = rs1 ^ imm`
-`slli  rd  rs1 imm`    | `rd = rs1 << imm`
-`srli  rd  rs1 imm`    | `rd = rs1 >> imm`
 
 ## Pseudo-instructions
 
@@ -68,7 +68,7 @@ Instruction          | Expansion           | Description
 `j offset`           | `beq x0 x0 offset`  | Jump
 `inc  rd`            | `addi rd rd 1`      | Increment register
 `dec  rd`            | `addi rd rd -1`     | Decrement register
-`li   rd imm`        | `addi rd rd imm`    | Load lower 16-bit
+`li   rd imm`        | `addi rd zero imm`  | Load immediate (lower 16-bit)
 `mv   rd rs`         | `addi rd rs 0`      | Copy register
 `not  rd rs1`        | `xori rd rs -1`     | One’s complement
 `neg  rd rs1`        | `sub rd x0 rs`      | Two’s complement
@@ -89,7 +89,7 @@ Instruction          | Expansion           | Description
 
 ### Instruction layout
 
-Imm       | rs2       | rs1       | rd      | Opcode 
+Imm/Addr  | rs2       | rs1       | rd      | Opcode 
 ----------|-----------|-----------|---------|--------
 `[31:16]` | `[15:13]` | `[12:10]` | `[9:7]` | `[6:0]`
 
