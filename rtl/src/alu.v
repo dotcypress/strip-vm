@@ -35,12 +35,12 @@ module ALU
                 FN_SRA: res <= src1 >> src2;
                 FN_SUB: res <= src1 - src2;
                 FN_MUL: res <= src1 * src2;
-                FN_SLT: res <= src1 < src2;// TODO: fix
-                FN_SLTU: res <= src1 < src2;// TODO: fix
                 FN_EQ:  res <= src1 == src2;
                 FN_NEQ: res <= src1 != src2;
-                FN_GE: res <= src1 >= src2;// TODO: fix
-                FN_GEU: res <= src1 >= src2;// TODO: fix
+                FN_SLT: res <= src1 < src2;  // TODO: fix
+                FN_SLTU: res <= src1 < src2; // TODO: fix
+                FN_GE: res <= src1 >= src2;  // TODO: fix
+                FN_GEU: res <= src1 >= src2; // TODO: fix
                 default: res <= 0;
             endcase
     end
