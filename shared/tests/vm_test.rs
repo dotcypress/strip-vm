@@ -451,10 +451,26 @@ fn test_bltu() {
   );
 }
 
-fn assert_vm_state(code: &str, target_pc: usize, target_regs: [i32; 8], target_mem: Vec<u8>) {
+#[test]
+fn test_multi_spin() {
+  let (pc, reg, ram) = spin_vm(
+    2,
+    &"
+    dec s0
+    inc s1
+    sb s0 (s1)
+  ",
+  )
+  .unwrap();
+  assert_eq!(pc, 3);
+  assert_eq!(reg, [0, 0, -2, 2, 0, 0, 0, 0]);
+  assert_eq!(ram, vec![0, 255, 254, 0, 0, 0, 0, 0]);
+}
+
+fn assert_vm_state(code: &str, target_pc: usize, target_reg: [i32; 8], target_mem: Vec<u8>) {
   let (pc, reg, ram) = spin_vm(1, code).unwrap();
   assert_eq!(pc, target_pc);
-  assert_eq!(reg, target_regs);
+  assert_eq!(reg, target_reg);
   assert_eq!(ram, target_mem);
 }
 
