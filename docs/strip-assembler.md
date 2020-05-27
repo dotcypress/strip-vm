@@ -13,6 +13,7 @@ s0-s5    | Saved registers
 Directive  | Arguments    | Description
 -----------|--------------|--------------------
 `.equ`     | `name value` | Constant definition
+`.alias`   | `name reg`   | Register alias definition
 `.zero`    | `number`     | Emit zeros
 `.string`  | `string `    | Emit string
 `.incbin`  | `filename`   | Emit binary file

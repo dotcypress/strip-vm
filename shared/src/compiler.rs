@@ -7,6 +7,7 @@ use crate::*;
 use byteorder::{BigEndian, ByteOrder};
 
 pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
+  let mut aliases: HashMap<&str, Reg> = HashMap::new();
   let mut consts: HashMap<&str, i16> = HashMap::new();
   let mut labels: HashMap<&str, i16> = HashMap::new();
   let mut ops: Vec<&Word> = Vec::with_capacity(1024);
@@ -28,6 +29,9 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
         match dir {
           Directive::Constant(ident, val) => {
             consts.insert(ident, *val);
+          }
+          Directive::Alias(ident, reg) => {
+            aliases.insert(ident, *reg);
           }
           Directive::Zero(size) => {
             for _ in 0..*size {
@@ -88,6 +92,7 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
         } else if let Some(label) = labels.get(ident) {
           offset += label;
         } else {
+          println!("ident: {:?}", ident);
           return Err(Error::CompileError);
         }
       }
@@ -95,11 +100,27 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
     } else {
       (op.r3, op.imm.to_be_bytes())
     };
+
+    let resolve_reg = |reg_link| match reg_link {
+      RegLink::Direct(reg) => Ok(reg),
+      RegLink::Alias(ident) => match aliases.get(ident) {
+        Some(reg) => Ok(*reg),
+        None => {
+          println!("reg ident: {:?}", ident);
+          Err(Error::CompileError)
+        },
+      },
+    };
+
+    let r1 = resolve_reg(op.r1)?;
+    let r2 = resolve_reg(op.r2)?;
+    let r3 = resolve_reg(r3)?;
+
     let mut word = (imm[0] as u32) << 24;
     word |= (imm[1] as u32) << 16;
     word |= (r3 as u32 & 0x7) << 13;
-    word |= (op.r2 as u32 & 0x7) << 10;
-    word |= (op.r1 as u32 & 0x7) << 7;
+    word |= (r2 as u32 & 0x7) << 10;
+    word |= (r1 as u32 & 0x7) << 7;
     word |= op.opcode as u32 & 0x7f;
     BigEndian::write_u32(&mut buf, word);
     prog.extend(&buf);

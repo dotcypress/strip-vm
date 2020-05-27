@@ -5,38 +5,41 @@
 
 .equ STRIP_SIZE 900 # 300 leds * 3 color components
 .equ STRIP_BASE 0x1000
-
-.equ ECALL_SET_PSC 0
-.equ PRESCALER 0x18
-
 .equ LUMA 0x22
 
+.equ SET_PSC 0
+.equ PRESCALER 0x18
+
+.alias frame s0
+.alias led_idx s1
+.alias luma s2
+
 li ra PRESCALER
-ecall ra ECALL_SET_PSC(ra)
+ecall ra SET_PSC(ra)
 
 j start
 
 reset:
-  li s0 STRIP_SIZE
-  li s2 LUMA
-  dec s0
+  li frame STRIP_SIZE
+  li luma LUMA
+  dec frame
 
 start:
-  bltz s0 reset
-  li s1 STRIP_SIZE
+  bltz frame reset
+  li led_idx STRIP_SIZE
 
 loop:
-  dec s1
-  bne s0 s1 off
+  dec led_idx
+  bne frame led_idx off
 
 on:
-  sb s2 STRIP_BASE(s1)
+  sb luma STRIP_BASE(led_idx)
   j until
 
 off:
-  sb zero STRIP_BASE(s1)
+  sb zero STRIP_BASE(led_idx)
 
 until:
-  bnez s1 loop
+  bnez led_idx loop
 
-dec s0
+dec frame

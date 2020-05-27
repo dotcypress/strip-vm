@@ -21,6 +21,24 @@ fn test_directives() {
 }
 
 #[test]
+fn test_alias_directive() {
+  assert_vm_state(
+    &"
+    .alias x s0
+    .alias y s1
+    .alias z s2
+
+    li x 2
+    li y 4
+    add z x y
+  ",
+    3,
+    [0, 0, 2, 4, 6, 0, 0, 0],
+    vec![0, 0, 0, 0, 0, 0, 0, 0],
+  );
+}
+
+#[test]
 fn test_string_directive() {
   assert_vm_state(
     &"
@@ -29,7 +47,7 @@ fn test_string_directive() {
       .string \"Hello\"
 
     lb s0 message
-    lb s1 2(message)
+    lb s1 message(2)
     li s2 4
     lb s2 message(s2)
   ",
@@ -98,13 +116,13 @@ fn test_mem() {
     .equ MAGIC 0x2
     li s0 0xaf
     sb s0 MAGIC
-    sb s0 1(MAGIC)
+    sb s0 MAGIC(1)
     lbu s1 MAGIC
     lb s2 MAGIC
     lh s3 MAGIC
     lhu s4 MAGIC
-    lw s5 -2(MAGIC)
-    sw s5 2(MAGIC)
+    lw s5 MAGIC(-2)
+    sw s5 MAGIC(2)
   ",
     9,
     [0, 0, 0xaf, 0xaf, -81, -20561, 0xafaf, 0xafaf],
