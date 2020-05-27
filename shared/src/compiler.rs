@@ -92,7 +92,6 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
         } else if let Some(label) = labels.get(ident) {
           offset += label;
         } else {
-          println!("ident: {:?}", ident);
           return Err(Error::CompileError);
         }
       }
@@ -105,10 +104,7 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
       RegLink::Direct(reg) => Ok(reg),
       RegLink::Alias(ident) => match aliases.get(ident) {
         Some(reg) => Ok(*reg),
-        None => {
-          println!("reg ident: {:?}", ident);
-          Err(Error::CompileError)
-        },
+        None => Err(Error::CompileError),
       },
     };
 
