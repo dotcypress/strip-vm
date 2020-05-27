@@ -8,7 +8,7 @@ pub type Parser = grammar::StripParser;
 
 pub fn parse(code: &str) -> Result<Exprs, Error> {
   Parser::new().parse(code).map_err(|err| {
-    println!(">>{:?}", err);
+    println!("Parser error: {:?}", err);
     Error::ParseError
   })
 }
@@ -16,6 +16,7 @@ pub fn parse(code: &str) -> Result<Exprs, Error> {
 #[derive(Debug)]
 pub enum Directive<'a> {
   Constant(&'a str, i16),
+  Alias(&'a str, Reg),
   Byte(Vec<u8>),
   Half(Vec<u16>),
   Word(Vec<u32>),
@@ -26,9 +27,9 @@ pub enum Directive<'a> {
 #[derive(Debug)]
 pub struct Word<'a> {
   pub opcode: Opcode,
-  pub r1: Reg,
-  pub r2: Reg,
-  pub r3: Reg,
+  pub r1: RegLink<'a>,
+  pub r2: RegLink<'a>,
+  pub r3: RegLink<'a>,
   pub imm: i16,
   pub addr: Option<parser::Address<'a>>,
 }
@@ -36,9 +37,9 @@ pub struct Word<'a> {
 impl<'a> Word<'a> {
   pub fn new(
     opcode: Opcode,
-    r1: Reg,
-    r2: Reg,
-    r3: Reg,
+    r1: RegLink<'a>,
+    r2: RegLink<'a>,
+    r3: RegLink<'a>,
     imm: i16,
     addr: Option<parser::Address<'a>>,
   ) -> Self {
@@ -61,15 +62,21 @@ pub enum Exp<'a> {
   Directive(Directive<'a>),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum RegLink<'a> {
+  Alias(&'a str),
+  Direct(Reg),
+}
+
 #[derive(Debug)]
 pub struct Address<'a> {
-  pub(crate) reg: Reg,
+  pub(crate) reg: RegLink<'a>,
   pub(crate) offset: i16,
   pub(crate) ident: Option<&'a str>,
 }
 
 impl<'a> Address<'a> {
-  pub fn new(reg: Reg, offset: i16, ident: Option<&'a str>) -> Self {
+  pub fn new(reg: RegLink<'a>, offset: i16, ident: Option<&'a str>) -> Self {
     Self { reg, offset, ident }
   }
 }
