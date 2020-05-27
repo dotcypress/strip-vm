@@ -37,12 +37,11 @@ Reg: RegLink<'input> = {
 };
 
 Addr: Address<'input> = {
-  <offset:NumLit> => Address::new(RegLink::Direct(Reg::Zero), offset as i16, None),
-  <offset:NumLit> "(pc)" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some("pc")),
   "(pc)" => Address::new(RegLink::Direct(Reg::Zero), 0, Some("pc")),
   "(" <reg:Reg> ")" => Address::new(reg, 0, None),
+  <offset:NumLit> "(pc)" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some("pc")),
+  <offset:NumLit> => Address::new(RegLink::Direct(Reg::Zero), offset as i16, None),
   <offset:NumLit> "(" <reg:Reg> ")" => Address::new(reg, offset as i16, None),
-  <ident:Ident> "(" <offset:NumLit> ")" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some(ident)),
   <ident:Ident> "(" <reg:Reg> ")" => Address::new(reg, 0, Some(ident)),
   <ident:Ident> => Address::new(RegLink::Direct(Reg::Zero), 0, Some(ident)),
 };

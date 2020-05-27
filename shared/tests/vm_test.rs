@@ -47,11 +47,12 @@ fn test_string_directive() {
       .string \"Hello\"
 
     lb s0 message
-    lb s1 message(2)
+    li s1 2
+    lb s1 message(s1)
     li s2 4
     lb s2 message(s2)
   ",
-    4,
+    5,
     [0, 0, 72, 108, 111, 0, 0, 0],
     vec![0, 0, 0, 72, 101, 108, 108, 111],
   );
@@ -114,19 +115,20 @@ fn test_mem() {
   assert_vm_state(
     &"
     .equ MAGIC 0x2
+
     li s0 0xaf
     sb s0 MAGIC
-    sb s0 MAGIC(1)
+    sb s0 MAGIC(zero)
     lbu s1 MAGIC
     lb s2 MAGIC
     lh s3 MAGIC
     lhu s4 MAGIC
-    lw s5 MAGIC(-2)
-    sw s5 MAGIC(2)
+    lw s5 MAGIC(ra)
+    sw s5 MAGIC(ra)
   ",
     9,
-    [0, 0, 0xaf, 0xaf, -81, -20561, 0xafaf, 0xafaf],
-    vec![0, 0, 0xaf, 0xaf, 0, 0, 0xaf, 0xaf],
+    [0, 0, 0xaf, 0xaf, -81, -20736, 44800, -1_358_954_496],
+    vec![0, 0, 0xaf, 0, 0, 0, 0, 0],
   );
 }
 

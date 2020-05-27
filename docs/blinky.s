@@ -3,19 +3,19 @@
 # VM spin time:      8.216us,  max fps: 126Hz
 # Total:             15.451us, max fps: 64Hz
 
-.equ STRIP_SIZE 900 # 300 leds * 3 color components
-.equ STRIP_BASE 0x1000
-.equ LUMA 0x22
-
-.equ SET_PSC 0
-.equ PRESCALER 0x18
-
 .alias frame s0
 .alias led_idx s1
 .alias luma s2
+.alias psc s3
 
-li ra PRESCALER
-ecall ra SET_PSC(ra)
+.equ STRIP_SIZE 900 # 300 leds * 3 color components
+.equ STRIP_BASE 0x1000
+.equ SET_PSC 0x0
+.equ PRESCALER 0x18
+.equ LUMA 0x22
+
+li psc PRESCALER
+ecall zero SET_PSC(psc)
 
 j start
 
