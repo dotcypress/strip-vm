@@ -1,4 +1,4 @@
-# Total: 22133us, max fps: 45Hz
+# Total: 22604us, max fps: 44
 .alias psc s0
 .alias hue s1
 .alias sv s2
@@ -6,7 +6,7 @@
 
 .equ PRESCALER 24
 .equ MAX_HUE 255
-.equ SV 0xff08
+.equ SV 0xff20
 .equ STRIP_BASE 0x1000
 .equ STRIP_SIZE 300
 .equ HSV2RGB 0x1
