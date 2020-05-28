@@ -13,6 +13,7 @@ module CPU
 
     localparam OP_ADD   = 7'b0000000;
     localparam OP_ADDI  = 7'b0000001;
+    localparam OP_ECALL = 7'b0000010;
     localparam OP_LA    = 7'b0000100;
     localparam OP_LUI   = 7'b0000101;
     localparam OP_AND   = 7'b0001000;
@@ -28,7 +29,7 @@ module CPU
     localparam OP_SRA   = 7'b0110000;
     localparam OP_SUB   = 7'b0111000;
     localparam OP_MUL   = 7'b1000000;
-    localparam OP_ECALL = 7'b1000001;
+    localparam OP_MULI  = 7'b1000001;
     localparam OP_SLT   = 7'b1001000;
     localparam OP_BLT   = 7'b1001010;
     localparam OP_SLTU  = 7'b1010000;
@@ -133,7 +134,7 @@ module CPU
                             alu_en <= 1;
                         end
                         OP_ADDI | OP_ANDI | OP_ORI | OP_XORI |
-                        OP_SLLI | OP_SRLI | OP_SLTIU: begin
+                        OP_SLLI | OP_SRLI | OP_SLTIU | OP_MULI: begin
                             alu_src1 <= reg_file[rs1];
                             alu_src2 <= imm;
                             alu_en <= 1;
