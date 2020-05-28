@@ -27,7 +27,8 @@ loop:
   li hue MAX_HUE
 
   addi led led -3
-  sh sv 1(led)
   sb hue (led)
+  sh sv 1(led)
   ecall zero HSV2RGB(led)
+
   bnez led loop

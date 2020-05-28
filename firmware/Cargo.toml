@@ -22,7 +22,7 @@ path = "../shared/"
 [dependencies.stm32g0xx-hal]
 default-features = false
 features = ["rt", "stm32g07x"]
-version = "0.0.7"
+version = "0.0.8"
 
 [profile.dev]
 incremental = false
