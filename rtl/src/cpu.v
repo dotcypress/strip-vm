@@ -127,6 +127,9 @@ module CPU
                 S_EXEC: begin
                     stage <= S_WBACK;
                     case (fn )
+                        OP_ECALL: begin
+                            // TODO: implement
+                        end
                         OP_ADD | OP_AND | OP_OR | OP_XOR  | OP_SLL |
                         OP_SRL | OP_SLT | OP_SRA | OP_SUB | OP_MUL: begin
                             alu_src1 <= reg_file[rs1];
@@ -199,9 +202,6 @@ module CPU
                             mem_addr <= reg_file[rs2] + imm;
                             mem_use_ram <= 1;
                             mem_load_en <= 1;
-                        end
-                        OP_ECALL: begin
-                            // TODO: fix
                         end
                     endcase
                 end
