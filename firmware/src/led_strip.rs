@@ -107,7 +107,7 @@ impl Env for Environment {
         let offset = param as usize - 0x1000;
         hsv2grb(&mut self.led_ram[offset..(offset + 3)]);
       }
-      _=> {}
+      _ => {}
     }
     Ok(0)
   }
@@ -121,16 +121,16 @@ fn hsv2grb(buf: &mut [u8]) {
   let p: u16 = val * (255 - sat) / 255;
   let q: u16 = val * (255 - (sat * f) / 255) / 255;
   let t: u16 = val * (255 - (sat * (255 - f)) / 255) / 255;
-  let grb = match hue {
-    0..=42 => (t, val, p),
-    43..=84 => (val, q, p),
-    85..=127 => (val, p, t),
-    128..=169 => (q, p, val),
-    170..=212 => (p, t, val),
-    213..=254 => (p, val, q),
+  let rgb = match hue {
+    0..=42 => (val, t, p),
+    43..=84 => (q, val, p),
+    85..=127 => (p, val, t),
+    128..=169 => (p, q, val),
+    170..=212 => (t, p, val),
+    213..=254 => (val, p, q),
     255 => (t, val, p),
   };
-  buf[0] = grb.0 as u8;
-  buf[1] = grb.1 as u8;
-  buf[2] = grb.2 as u8;
+  buf[0] = rgb.0 as u8;
+  buf[1] = rgb.1 as u8;
+  buf[2] = rgb.2 as u8;
 }
