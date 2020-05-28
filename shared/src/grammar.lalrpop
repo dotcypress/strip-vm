@@ -72,7 +72,7 @@ Op: Word<'input> = {
 }
 
 PseudoOp: Vec<Word<'input>> = {
-  "nop" => vec![Word::new(Opcode::ADDI, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, None)],
+  "nop" => vec![Word::new(Opcode::ADD, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, None)],
   "j" <addr:Addr> => vec![Word::new(Opcode::BEQ, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
   "inc" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), 1, None)],
   "dec" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), -1, None)],

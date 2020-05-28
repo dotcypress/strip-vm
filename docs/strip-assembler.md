@@ -23,71 +23,71 @@ Directive  | Arguments    | Description
 
 ## Assembler Instructions
 
-Instruction            | Description
------------------------|---------------------------
-`ecall rd      imm`    | Request to the execution environment
-`lui   rd      imm`    | Load upper 16-bit
-`la    rs1     addr`   | Load address
-`lb    rd      addr`   | Load 8-bit word
-`lbu   rd      addr`   | Load 8-bit word, unsigned
-`lh    rd      addr`   | Load 16-bit word
-`lhu   rd      addr`   | Load 16-bit word, unsigned
-`lw    rd      addr`   | Load 32-bit word
-`sb    rs1     addr`   | Store 8-bit word
-`sh    rs1     addr`   | Store 16-bit word
-`sw    rs1     addr`   | Store 32-bit word
-`beq   rs  rt  offset` | Branch if = ; ra <- pc + 1
-`bne   rs  rt  offset` | Branch if != ; ra <- pc + 1
-`bge   rs  rt  offset` | Branch if >= ; ra <- pc + 1
-`blt   rs  rt  offset` | Branch if < ; ra <- pc + 1
-`bgeu  rs  rt  offset` | Branch if >=, unsigned ; ra <- pc + 1
-`bltu  rs  rt  offset` | Branch if <, unsigned ; ra <- pc + 1
-`add   rd  rs1 rs2`    | `rd = rs1 + rs2`
-`addi  rd  rs1 imm`    | `rd = rs1 + imm`
-`and   rd  rs1 rs2`    | `rd = rs1 & rs2`
-`andi  rd  rs1 imm`    | `rd = rs1 & imm`
-`mul   rd  rs1 rs2`    | `rd = rs1 * rs2`
-`muli  rd  rs1 imm`    | `rd = rs1 * imm`
-`or    rd  rs1 rs2`    | `rd = rs1 \| rs2`
-`ori   rd  rs1 imm`    | `rd = rs1 \| imm`
-`sll   rd  rs1 rs2`    | `rd = rs1 << rs2`
-`slli  rd  rs1 imm`    | `rd = rs1 << imm`
-`slt   rd  rs1 rs2`    | `rd = rs1 < rs2`
-`sltiu rd  rs1 imm`    | `rd = rs1 < imm`, unsigned
-`sltu  rd  rs1 rs2`    | `rd = rs1 < rs2`, unsigned
-`sra   rd  rs1 rs2`    | `rd = rs1 >>> rs2`
-`srl   rd  rs1 rs2`    | `rd = rs1 >> rs2`
-`srli  rd  rs1 imm`    | `rd = rs1 >> imm`
-`sub   rd  rs1 rs2`    | `rd = rs1 - rs2`
-`xor   rd  rs1 rs2`    | `rd = rs1 ^ rs2`
-`xori  rd  rs1 imm`    | `rd = rs1 ^ imm`
+Instruction          | Description
+-------------------- |---------------------------
+`ecall rd      imm`  | Request to the execution environment
+`lui   rd      imm`  | Load upper 16-bit
+`la    rs      addr` | Load address
+`lb    rd      addr` | Load 8-bit word
+`lbu   rd      addr` | Load 8-bit word, unsigned
+`lh    rd      addr` | Load 16-bit word
+`lhu   rd      addr` | Load 16-bit word, unsigned
+`lw    rd      addr` | Load 32-bit word
+`sb    rs      addr` | Store 8-bit word
+`sh    rs      addr` | Store 16-bit word
+`sw    rs      addr` | Store 32-bit word
+`beq   rs  rt  addr` | Branch if = ; ra <- pc + 1
+`bne   rs  rt  addr` | Branch if != ; ra <- pc + 1
+`bge   rs  rt  addr` | Branch if >= ; ra <- pc + 1
+`blt   rs  rt  addr` | Branch if < ; ra <- pc + 1
+`bgeu  rs  rt  addr` | Branch if >=, unsigned ; ra <- pc + 1
+`bltu  rs  rt  addr` | Branch if <, unsigned ; ra <- pc + 1
+`add   rd  rs1 rs2`  | `rd = rs1 + rs2`
+`addi  rd  rs  imm`  | `rd = rs + imm`
+`and   rd  rs1 rs2`  | `rd = rs1 & rs2`
+`andi  rd  rs  imm`  | `rd = rs & imm`
+`mul   rd  rs1 rs2`  | `rd = rs1 * rs2`
+`muli  rd  rs  imm`  | `rd = rs * imm`
+`or    rd  rs1 rs2`  | `rd = rs1 \| rs2`
+`ori   rd  rs  imm`  | `rd = rs \| imm`
+`sll   rd  rs1 rs2`  | `rd = rs1 << rs2`
+`slli  rd  rs  imm`  | `rd = rs << imm`
+`slt   rd  rs1 rs2`  | `rd = rs1 < rs2`
+`sltiu rd  rs  imm`  | `rd = rs < imm`, unsigned
+`sltu  rd  rs1 rs2`  | `rd = rs1 < rs2`, unsigned
+`sra   rd  rs1 rs2`  | `rd = rs1 >>> rs2`
+`srl   rd  rs1 rs2`  | `rd = rs1 >> rs2`
+`srli  rd  rs  imm`  | `rd = rs >> imm`
+`sub   rd  rs1 rs2`  | `rd = rs1 - rs2`
+`xor   rd  rs1 rs2`  | `rd = rs1 ^ rs2`
+`xori  rd  rs  imm`  | `rd = rs ^ imm`
 
 ## Pseudo-instructions
 
-Instruction          | Expansion           | Description
----------------------|---------------------|-----------------------
-`nop`                | `addi x0 x0 0`      | No operation
-`j    offset`           | `beq x0 x0 offset`  | Jump
-`inc  rd`            | `addi rd rd 1`      | Increment register
-`dec  rd`            | `addi rd rd -1`     | Decrement register
-`li   rd imm`        | `addi rd zero imm`  | Load immediate (lower 16-bit)
-`mv   rd rs`         | `addi rd rs 0`      | Copy register
-`not  rd rs1`        | `xori rd rs -1`     | One’s complement
-`neg  rd rs1`        | `sub rd x0 rs`      | Two’s complement
-`seqz rd rs1`        | `sltiu rd rs 1`     | Set if = zero
-`snez rd rs1`        | `sltu rd x0 rs`     | Set if != zero
-`sltz rd rs1`        | `slt rd rs x0`      | Set if < zero
-`sgtz rd rs1`        | `slt rd x0 rs`      | Set if > zero
-`beqz rs1 offset`    | `beq rs x0 offset`  | Branch if = zero ; ra <- pc + 1
-`bnez rs1 offset`    | `bne rs x0 offset`  | Branch if != zero ; ra <- pc + 1
-`blez rs1 offset`    | `bge x0 rs offset`  | Branch if <= zero ; ra <- pc + 1
-`bgez rs1 offset`    | `bge rs x0 offset`  | Branch if ≥ zero ; ra <- pc + 1
-`bltz rs1 offset`    | `blt rs x0 offset`  | Branch if < zero ; ra <- pc + 1
-`bgtz rs1 offset`    | `blt x0 rs offset`  | Branch if > zero ; ra <- pc + 1
-`bgt  rs  rt offset` | `blt rt rs offset`  | Branch if > ; ra <- pc + 1
-`ble  rs  rt offset` | `bge rt rs offset`  | Branch if <= ; ra <- pc + 1
-`bgtu rs  rt offset` | `bltu rt rs offset` | Branch if >, unsigned ; ra <- pc + 1
-`bleu rs  rt offset` | `bltu rt rs offset` | Branch if <=, unsigned ; ra <- pc + 1
+Instruction       | Expansion           | Description
+------------------|---------------------|-----------------------
+`nop`             | `add x0 x0 x0`      | No operation
+`j    addr`       | `beq x0 x0 addr`    | Jump
+`inc  rd`         | `addi rd rd 1`      | Increment register
+`dec  rd`         | `addi rd rd -1`     | Decrement register
+`li   rd    imm`  | `addi rd zero imm`  | Load immediate (lower 16-bit)
+`mv   rd rs`      | `addi rd rs 0`      | Copy register
+`not  rd rs`      | `xori rd rs -1`     | One’s complement
+`neg  rd rs`      | `sub rd x0 rs`      | Two’s complement
+`seqz rd rs`      | `sltiu rd rs 1`     | Set if = zero
+`snez rd rs`      | `sltu rd x0 rs`     | Set if != zero
+`sltz rd rs`      | `slt rd rs x0`      | Set if < zero
+`sgtz rd rs`      | `slt rd x0 rs`      | Set if > zero
+`beqz    rs addr` | `beq rs x0 addr`    | Branch if = zero ; ra <- pc + 1
+`bnez    rs addr` | `bne rs x0 addr`    | Branch if != zero ; ra <- pc + 1
+`blez    rs addr` | `bge x0 rs addr`    | Branch if <= zero ; ra <- pc + 1
+`bgez    rs addr` | `bge rs x0 addr`    | Branch if ≥ zero ; ra <- pc + 1
+`bltz    rs addr` | `blt rs x0 addr`    | Branch if < zero ; ra <- pc + 1
+`bgtz    rs addr` | `blt x0 rs addr`    | Branch if > zero ; ra <- pc + 1
+`bgt  rs rt addr` | `blt rt rs addr`    | Branch if > ; ra <- pc + 1
+`ble  rs rt addr` | `bge rt rs addr`    | Branch if <= ; ra <- pc + 1
+`bgtu rs rt addr` | `bltu rt rs addr`   | Branch if >, unsigned ; ra <- pc + 1
+`bleu rs rt addr` | `bltu rt rs addr`   | Branch if <=, unsigned ; ra <- pc + 1
 
 ### Instruction layout
 
@@ -101,6 +101,7 @@ Func | R | B | I | Opcode
 -----| --|---|---|--------
 0000 | 0 | 0 | 0 | `ADD`
 0000 | 0 | 0 | 1 | `ADDI`
+0000 | 0 | 1 | 0 | `ECALL`
 0000 | 1 | 0 | 0 | `LA`
 0000 | 1 | 0 | 1 | `LUI`
 0001 | 0 | 0 | 0 | `AND`
@@ -116,8 +117,7 @@ Func | R | B | I | Opcode
 0110 | 0 | 0 | 0 | `SRA`
 0111 | 0 | 0 | 0 | `SUB`
 1000 | 0 | 0 | 0 | `MUL`
-1000 | 1 | 0 | 1 | `MULI`
-1000 | 0 | 0 | 1 | `ECALL`
+1000 | 0 | 0 | 1 | `MULI`
 1001 | 0 | 0 | 0 | `SLT`
 1001 | 0 | 1 | 0 | `BLT`
 1010 | 0 | 0 | 0 | `SLTU`
