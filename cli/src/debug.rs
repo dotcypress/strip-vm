@@ -13,10 +13,12 @@ impl<'input> Trace<'input> {
     max_ops: Option<u32>,
     ram_size: u16,
     trace_memory: bool,
+    trace_ecalls: bool,
     bytecode: &'input [u8],
   ) -> Result<Self, VMError> {
     let mut vm = VM::new(Environment {
       trace_memory,
+      trace_ecalls,
       ram: vec![0; ram_size as usize],
     });
     vm.load(bytecode)?;
@@ -53,6 +55,7 @@ impl<'input> Trace<'input> {
 }
 
 pub struct Environment {
+  trace_ecalls: bool,
   trace_memory: bool,
   ram: Vec<u8>,
 }
@@ -67,7 +70,7 @@ impl Env for Environment {
   fn mem_fetch(&self, addr: u16, buf: &mut [u8]) -> Result<(), Self::Error> {
     let offset = addr as usize;
     if self.trace_memory {
-      println!("MEM  FETCH  0x{:x}", offset);
+      println!("            MEM FETCH          0x{:x}", offset);
     }
     if offset >= 0x1000 {
       return Ok(());
@@ -83,7 +86,7 @@ impl Env for Environment {
   fn mem_set(&mut self, addr: u16, val: &[u8]) -> Result<(), Self::Error> {
     let offset = addr as usize;
     if self.trace_memory {
-      println!("MEM  SET    0x{:x} {:?}", offset, val);
+      println!("            MEM SET            0x{:x} {:?}", offset, val);
     }
     if offset >= 0x1000 {
       return Ok(());
@@ -97,7 +100,9 @@ impl Env for Environment {
   }
 
   fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
-    println!("ECALL       0x{:x}(0x{:x?})", ecall, param);
+    if self.trace_ecalls {
+      println!("            ECALL              0x{:x}(0x{:x?})", ecall, param);
+    }
     Ok(0)
   }
 }

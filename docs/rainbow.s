@@ -12,14 +12,15 @@
 .equ HSV2RGB 0x1
 .equ SET_PSC 0x0
 
+bgtz sv start
+li sv SV
 li psc PRESCALER
 ecall zero SET_PSC(psc)
 
-li sv SV
-
-li led STRIP_SIZE
-muli led led 3
-la led STRIP_BASE(led)
+start:
+  li led STRIP_SIZE
+  muli led led 3
+  la led STRIP_BASE(led)
 
 loop:
   dec hue
