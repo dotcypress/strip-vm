@@ -167,6 +167,7 @@ impl<'prog, E: Env> VM<'prog, E> {
       Opcode::ADD => Some(self.reg[rs1] + self.reg[rs2]),
       Opcode::AND => Some(self.reg[rs1] & self.reg[rs2]),
       Opcode::MUL => Some(self.reg[rs1] * self.reg[rs2]),
+      Opcode::MULI => Some(self.reg[rs1] * imm as i32),
       Opcode::OR => Some(self.reg[rs1] | self.reg[rs2]),
       Opcode::SUB => Some(self.reg[rs1] - self.reg[rs2]),
       Opcode::XOR => Some(self.reg[rs1] ^ self.reg[rs2]),

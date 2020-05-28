@@ -47,6 +47,7 @@ Instruction            | Description
 `and   rd  rs1 rs2`    | `rd = rs1 & rs2`
 `andi  rd  rs1 imm`    | `rd = rs1 & imm`
 `mul   rd  rs1 rs2`    | `rd = rs1 * rs2`
+`muli  rd  rs1 imm`    | `rd = rs1 * imm`
 `or    rd  rs1 rs2`    | `rd = rs1 \| rs2`
 `ori   rd  rs1 imm`    | `rd = rs1 \| imm`
 `sll   rd  rs1 rs2`    | `rd = rs1 << rs2`
@@ -66,7 +67,7 @@ Instruction            | Description
 Instruction          | Expansion           | Description
 ---------------------|---------------------|-----------------------
 `nop`                | `addi x0 x0 0`      | No operation
-`j offset`           | `beq x0 x0 offset`  | Jump
+`j    offset`           | `beq x0 x0 offset`  | Jump
 `inc  rd`            | `addi rd rd 1`      | Increment register
 `dec  rd`            | `addi rd rd -1`     | Decrement register
 `li   rd imm`        | `addi rd zero imm`  | Load immediate (lower 16-bit)
@@ -115,6 +116,7 @@ Func | R | B | I | Opcode
 0110 | 0 | 0 | 0 | `SRA`
 0111 | 0 | 0 | 0 | `SUB`
 1000 | 0 | 0 | 0 | `MUL`
+1000 | 1 | 0 | 1 | `MULI`
 1000 | 0 | 0 | 1 | `ECALL`
 1001 | 0 | 0 | 0 | `SLT`
 1001 | 0 | 1 | 0 | `BLT`

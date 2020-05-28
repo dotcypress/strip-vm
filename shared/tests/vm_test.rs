@@ -179,6 +179,23 @@ fn test_mul() {
   );
 }
 
+
+#[test]
+fn test_muli() {
+  assert_vm_state(
+    &"
+    li s0 100
+    li s1 500
+
+    muli s0 s0 500
+    muli s1 s1 -2
+  ",
+    4,
+    [0, 0, 50000, -1000, 0, 0, 0, 0],
+    vec![0, 0, 0, 0, 0, 0, 0, 0],
+  );
+}
+
 #[test]
 fn test_or() {
   assert_vm_state(

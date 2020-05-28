@@ -44,6 +44,7 @@ pub enum Opcode {
   SRA = 0b011_0000,
   SUB = 0b011_1000,
   MUL = 0b100_0000,
+  MULI = 0b100_0101,
   ECALL = 0b100_0001,
   SLT = 0b100_1000,
   BLT = 0b100_1010,

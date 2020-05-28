@@ -57,6 +57,7 @@ impl<'a> Word<'a> {
 #[derive(Debug)]
 pub enum Exp<'a> {
   Word(Word<'a>),
+  Words(Vec<Word<'a>>),
   Label(&'a str),
   Comment(&'a str),
   Directive(Directive<'a>),
