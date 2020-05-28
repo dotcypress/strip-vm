@@ -22,8 +22,12 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
         labels.insert(label, offset as i16);
       }
       Exp::Word(op) => {
-        ops.push(op);
         prog_started = true;
+        ops.push(op);
+      }
+      Exp::Words(words) => {
+        prog_started = true;
+        ops.extend(words);
       }
       Exp::Directive(dir) => {
         match dir {

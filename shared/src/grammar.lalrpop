@@ -37,12 +37,11 @@ Reg: RegLink<'input> = {
 };
 
 Addr: Address<'input> = {
-  <offset:NumLit> => Address::new(RegLink::Direct(Reg::Zero), offset as i16, None),
-  <offset:NumLit> "(pc)" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some("pc")),
   "(pc)" => Address::new(RegLink::Direct(Reg::Zero), 0, Some("pc")),
   "(" <reg:Reg> ")" => Address::new(reg, 0, None),
+  <offset:NumLit> "(pc)" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some("pc")),
+  <offset:NumLit> => Address::new(RegLink::Direct(Reg::Zero), offset as i16, None),
   <offset:NumLit> "(" <reg:Reg> ")" => Address::new(reg, offset as i16, None),
-  <ident:Ident> "(" <offset:NumLit> ")" => Address::new(RegLink::Direct(Reg::Zero), offset as i16, Some(ident)),
   <ident:Ident> "(" <reg:Reg> ")" => Address::new(reg, 0, Some(ident)),
   <ident:Ident> => Address::new(RegLink::Direct(Reg::Zero), 0, Some(ident)),
 };
@@ -52,6 +51,7 @@ Exp: Exp<'input> = {
   Comment => Exp::Comment(<>),
   Label => Exp::Label(<>),
   Op => Exp::Word(<>),
+  PseudoOp => Exp::Words(<>),
 };
 
 Dir: Directive<'input> = {
@@ -69,32 +69,31 @@ Op: Word<'input> = {
   <op:Op1RA> <r1:Reg> <addr:Addr> => Word::new(op, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
   <op:Op2RA> <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(op, r1, r2, RegLink::Direct(Reg::Zero), 0, Some(addr)),
   <op:Op3R> <r1:Reg> <r2:Reg> <r3:Reg> => Word::new(op, r1, r2, r3, 0, None),
-  PseudoOp => <>
 }
 
-PseudoOp: Word<'input> = {
-  "nop" => Word::new(Opcode::ADDI, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, None),
-  "j" <addr:Addr> => Word::new(Opcode::BEQ, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "inc" <r1:Reg> => Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), 1, None),
-  "dec" <r1:Reg> => Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), -1, None),
-  "mv" <r1:Reg> <r2:Reg> => Word::new(Opcode::ADDI, r1, r2, RegLink::Direct(Reg::Zero), 0, None),
-  "li" <r1:Reg> <addr:Addr> => Word::new(Opcode::ADDI, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bgt" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BLT, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "ble" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BGE, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bgtu" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BLTU, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bleu" <r1:Reg> <r2:Reg> <addr:Addr> => Word::new(Opcode::BGEU, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "beqz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BEQ, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bnez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BNE, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "blez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BGE, RegLink::Direct(Reg::Zero), r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bgez" <r1:Reg> <addr:Addr> => Word::new(Opcode::BGE, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bltz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BLT, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "bgtz" <r1:Reg> <addr:Addr> => Word::new(Opcode::BLT, RegLink::Direct(Reg::Zero), r1, RegLink::Direct(Reg::Zero), 0, Some(addr)),
-  "not"  <r1:Reg> <r2:Reg> => Word::new(Opcode::XORI, r1, r2, RegLink::Direct(Reg::Zero), -1, None),
-  "seqz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLTIU, r1, r2, RegLink::Direct(Reg::Zero), 1, None),
-  "snez" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLTU, r1, RegLink::Direct(Reg::Zero), r2, 0, None),
-  "sltz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLT, r1, r2, RegLink::Direct(Reg::Zero), 0, None),
-  "sgtz" <r1:Reg> <r2:Reg> => Word::new(Opcode::SLT, r1, RegLink::Direct(Reg::Zero), r2, 0, None),
-  "neg"  <r1:Reg> <r2:Reg> => Word::new(Opcode::SUB, r1, RegLink::Direct(Reg::Zero), r2, 0, None),
+PseudoOp: Vec<Word<'input>> = {
+  "nop" => vec![Word::new(Opcode::ADDI, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, None)],
+  "j" <addr:Addr> => vec![Word::new(Opcode::BEQ, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "inc" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), 1, None)],
+  "dec" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), -1, None)],
+  "mv" <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::ADDI, r1, r2, RegLink::Direct(Reg::Zero), 0, None)],
+  "li" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::ADDI, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bgt" <r1:Reg> <r2:Reg> <addr:Addr> => vec![Word::new(Opcode::BLT, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "ble" <r1:Reg> <r2:Reg> <addr:Addr> => vec![Word::new(Opcode::BGE, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bgtu" <r1:Reg> <r2:Reg> <addr:Addr> => vec![Word::new(Opcode::BLTU, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bleu" <r1:Reg> <r2:Reg> <addr:Addr> => vec![Word::new(Opcode::BGEU, r2, r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "beqz" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BEQ, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bnez" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BNE, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "blez" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BGE, RegLink::Direct(Reg::Zero), r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bgez" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BGE, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bltz" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BLT, r1, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "bgtz" <r1:Reg> <addr:Addr> => vec![Word::new(Opcode::BLT, RegLink::Direct(Reg::Zero), r1, RegLink::Direct(Reg::Zero), 0, Some(addr))],
+  "not"  <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::XORI, r1, r2, RegLink::Direct(Reg::Zero), -1, None)],
+  "seqz" <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::SLTIU, r1, r2, RegLink::Direct(Reg::Zero), 1, None)],
+  "snez" <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::SLTU, r1, RegLink::Direct(Reg::Zero), r2, 0, None)],
+  "sltz" <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::SLT, r1, r2, RegLink::Direct(Reg::Zero), 0, None)],
+  "sgtz" <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::SLT, r1, RegLink::Direct(Reg::Zero), r2, 0, None)],
+  "neg"  <r1:Reg> <r2:Reg> => vec![Word::new(Opcode::SUB, r1, RegLink::Direct(Reg::Zero), r2, 0, None)],
 }
 
 Op1RA: Opcode = {
@@ -115,6 +114,7 @@ Op2RA: Opcode = {
   "addi" => Opcode::ADDI,
   "ori" => Opcode::ORI,
   "andi" => Opcode::ANDI,
+  "muli" => Opcode::MULI,
   "xori" => Opcode::XORI,
   "slli" => Opcode::SLLI,
   "srli" => Opcode::SRLI,

@@ -36,7 +36,7 @@ fn main() -> io::Result<()> {
         .about("Starts program tracing")
         .arg(
           Arg::with_name("INPUT")
-            .help("Sets the assembly file")
+            .help("Sets the input file")
             .value_name("INPUT")
             .required(true)
             .index(1),
@@ -45,6 +45,11 @@ fn main() -> io::Result<()> {
           Arg::with_name("MEMORY")
             .short("m")
             .help("Trace memory access"),
+        )
+        .arg(
+          Arg::with_name("ECALLS")
+            .short("ecalls")
+            .help("Trace ecalls"),
         )
         .arg(
           Arg::with_name("RAM")
@@ -83,18 +88,26 @@ fn main() -> io::Result<()> {
     ("trace", Some(args)) => {
       let input = args.value_of("INPUT").unwrap();
       let mut file = File::open(input).unwrap();
-      let mut code = String::new();
-      file.read_to_string(&mut code)?;
+      let mut content = vec![];
+      file.read_to_end(&mut content)?;
 
-      let exprs = parse(&code).unwrap();
-      let bytecode = compile(&exprs).unwrap();
+      let bytecode = if content.len() >= 4 && content[0] == 0xaf && content[1] == 0xaf {
+        content
+      } else {
+        let code = String::from_utf8_lossy(&content);
+        let exprs = parse(&code).unwrap();
+        compile(&exprs).unwrap()
+      };
+
       let spins = u16::from_str_radix(args.value_of("SPINS").unwrap(), 10).unwrap();
       let ram = u16::from_str_radix(args.value_of("RAM").unwrap(), 10).unwrap();
       let trace_mem = args.is_present("MEMORY");
+      let trace_ecalls = args.is_present("ECALLS");
       let max_ops = args
         .value_of("MAX_OPS")
         .map(|s| u32::from_str_radix(s, 10).unwrap());
-      let mut trace = Trace::new(spins, max_ops, ram, trace_mem, &bytecode).unwrap();
+
+      let mut trace = Trace::new(spins, max_ops, ram, trace_mem, trace_ecalls, &bytecode).unwrap();
       trace.start().unwrap();
     }
     _ => {

@@ -23,7 +23,7 @@ where
       ops: 0,
       psc: 0,
     });
-    vm.load(include_bytes!("../../docs/blinky.bin")).unwrap();
+    vm.load(include_bytes!("../../docs/rainbow.bin")).unwrap();
     LedStrip { vm, link }
   }
 
@@ -99,9 +99,38 @@ impl Env for Environment {
   }
 
   fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
-    if ecall == 0 {
-      self.psc = param as u32;
+    match ecall {
+      0 => {
+        self.psc = param as u32;
+      }
+      1 => {
+        let offset = param as usize - 0x1000;
+        hsv2grb(&mut self.led_ram[offset..(offset + 3)]);
+      }
+      _ => {}
     }
     Ok(0)
   }
+}
+
+fn hsv2grb(buf: &mut [u8]) {
+  let hue = buf[0];
+  let sat = buf[1] as u16;
+  let val = buf[2] as u16;
+  let f = (hue as u16 * 2 % 85) * 3;
+  let p: u16 = val * (255 - sat) / 255;
+  let q: u16 = val * (255 - (sat * f) / 255) / 255;
+  let t: u16 = val * (255 - (sat * (255 - f)) / 255) / 255;
+  let rgb = match hue {
+    0..=42 => (val, t, p),
+    43..=84 => (q, val, p),
+    85..=127 => (p, val, t),
+    128..=169 => (p, q, val),
+    170..=212 => (t, p, val),
+    213..=254 => (val, p, q),
+    255 => (t, val, p),
+  };
+  buf[0] = rgb.0 as u8;
+  buf[1] = rgb.1 as u8;
+  buf[2] = rgb.2 as u8;
 }
