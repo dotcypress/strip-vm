@@ -24,7 +24,7 @@ module ALU
     localparam FN_GEU  = 4'b1110;
 
     always @(posedge clk) begin
-        if (en)
+        if (en) begin
             case (fn)
                 FN_ADD: res <= src1 + src2;
                 FN_AND: res <= src1 & src2;
@@ -37,11 +37,12 @@ module ALU
                 FN_MUL: res <= src1 * src2;
                 FN_EQ:  res <= src1 == src2;
                 FN_NEQ: res <= src1 != src2;
-                FN_SLT: res <= src1 < src2;  // TODO: fix
-                FN_SLTU: res <= src1 < src2; // TODO: fix
-                FN_GE: res <= src1 >= src2;  // TODO: fix
-                FN_GEU: res <= src1 >= src2; // TODO: fix
+                // FN_SLT: res <= src1 < src2;  // TODO: fix
+                // FN_SLTU: res <= src1 < src2; // TODO: fix
+                // FN_GE: res <= src1 >= src2;  // TODO: fix
+                // FN_GEU: res <= src1 >= src2; // TODO: fix
                 default: res <= 0;
             endcase
+        end
     end
 endmodule

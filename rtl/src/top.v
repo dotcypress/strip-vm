@@ -19,23 +19,35 @@ module top
     wire [9:0] x;
     wire [9:0] y;
 
-    reg [30:0] cnt;
-    reg [31:0] video [16:0];
+    reg [31:0] video[6:0];
     reg [31:0] debug[5:0];
-
-    wire slow_clk = cnt[30];
 
     assign led_r = ~debug[0];
     assign led_g = ~debug[1];
     assign led_b = ~debug[2];
 
-    wire grid = (x % 16 < 2) | (y % 16 < 2);
-    wire dashboard = x < 512 & y < 160;
-    wire hit = video[y / 16][x / 16];
+    assign video[0] = debug[0];
+    assign video[1] = debug[1];
+    assign video[2] = debug[2];
+    assign video[3] = debug[3];
+    assign video[4] = debug[4];
+    assign video[5] = debug[5];
 
-    assign lcd_g = 0;
+    wire dashboard = x < 768 & y < 144;
+    wire grid = (x % 24 < 2) | (y % 24 < 2);
+
+    wire hit = video[y / 24][31 - x / 24];
+    wire byte_tail = ((31 - x / 24) % 8) == 0;
+
     assign lcd_r = dashboard & ~grid & hit ? 5'b11111 : 0;
-    assign lcd_b = dashboard & ~grid ? 5'b11111 : 0;
+    assign lcd_g = dashboard & ~grid & ~byte_tail ? 5'b1111 : 0;
+    assign lcd_b = dashboard & ~grid ? 5'b1111 : 0;
+
+    reg [31:0] cnt;
+    wire cpu_clk = cnt[20];
+    always @(posedge sys_clk) begin
+        cnt <= cnt + 1;
+    end
 
     RPLL pll_instance (
         .clkin(xtal),
@@ -55,19 +67,9 @@ module top
     );
 
     CPU cpu (
-        .clk(slow_clk),
+        .clk(cpu_clk),
         .rst(~btn_a),
         .debug(debug)
     );
 
-    assign video[0] = debug[0];
-    assign video[1] = debug[1];
-    assign video[2] = debug[2];
-    assign video[3] = debug[3];
-    assign video[4] = debug[4];
-    assign video[9] = debug[5];
-
-    always @(posedge sys_clk) begin
-        cnt <= cnt + 1;
-    end
 endmodule

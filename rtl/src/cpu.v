@@ -64,16 +64,24 @@ module CPU
     reg        mem_store_en;
     reg        mem_use_ram;
 
-    wire [6:0]  fn  = ir[6:0];
-    wire [2:0]  rd  = ir[9:7];
-    wire [2:0]  rs1 = ir[12:10];
-    wire [2:0]  rs2 = ir[15:13];
-    wire [15:0] imm = ir[31:16];
+    wire [6:0]  op     = ir[6:0];
+    wire [6:0]  alu_fn = ir[6:3];
+    wire [2:0]  rd     = ir[9:7];
+    wire [2:0]  rs1    = ir[12:10];
+    wire [2:0]  rs2    = ir[15:13];
+    wire [15:0] imm    = ir[31:16];
+
+    assign debug[0] = stage;
+    assign debug[1] = pc;
+    assign debug[2] = ir;
+    assign debug[3] = reg_file[3];
+    assign debug[4] = reg_file[1];
+    assign debug[5] = reg_file[2];
 
     ALU alu (
         .clk(clk),
         .en(alu_en),
-        .fn(fn ),
+        .fn(alu_fn),
         .src1(alu_src1),
         .src2(alu_src2),
         .res(alu_res)
@@ -116,6 +124,7 @@ module CPU
             case (stage)
                 S_FETCH: begin
                     stage <= S_DECODE;
+                    mem_addr <= pc;
                     mem_use_ram <= 0;
                     mem_load_en <= 1;
                 end
@@ -126,119 +135,110 @@ module CPU
                 end
                 S_EXEC: begin
                     stage <= S_WBACK;
-                    case (fn )
-                        OP_ECALL: begin
-                            // TODO: implement
-                        end
-                        OP_ADD | OP_AND | OP_OR | OP_XOR  | OP_SLL |
-                        OP_SRL | OP_SLT | OP_SRA | OP_SUB | OP_MUL: begin
+                    case (op)
+                        OP_ADD, OP_AND, OP_OR, OP_XOR , OP_SLL,
+                        OP_SRL, OP_SLT, OP_SRA, OP_SUB, OP_MUL: begin
                             alu_src1 <= reg_file[rs1];
                             alu_src2 <= reg_file[rs2];
                             alu_en <= 1;
                         end
-                        OP_ADDI | OP_ANDI | OP_ORI | OP_XORI |
-                        OP_SLLI | OP_SRLI | OP_SLTIU | OP_MULI: begin
+                        OP_ADDI, OP_ANDI, OP_ORI, OP_XORI,
+                        OP_SLLI, OP_SRLI, OP_SLTIU, OP_MULI: begin
                             alu_src1 <= reg_file[rs1];
                             alu_src2 <= imm;
                             alu_en <= 1;
                         end
-                        OP_BLT | OP_BLTU | OP_BEQ | OP_BNE | OP_BGE | OP_BGEU: begin
-                            alu_src1 <= reg_file[rs1];
-                            alu_src2 <= reg_file[rs2];
+                        OP_BLT, OP_BLTU, OP_BEQ, OP_BNE, OP_BGE, OP_BGEU: begin
+                            alu_src1 <= reg_file[rd];
+                            alu_src2 <= reg_file[rs1];
                             alu_en <= 1;
                             branch <= 1;
                         end
-                        OP_LA: begin
-                            reg_file[rd] <= reg_file[rs2] + imm;
-                        end
-                        OP_LUI: begin
-                            reg_file[rd][31:16] <= imm;
-                        end
-                        OP_SB: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_store <= reg_file[rd];
-                            mem_store_en <= 1;
-                        end
-                        OP_SH: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_store <= reg_file[rd];
-                            mem_store_en <= 1;
-                        end
-                        OP_SW: begin
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_store <= reg_file[rd];
-                            mem_store_en <= 1;
-                        end
-                        OP_LB: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_load_en <= 1;
-                        end
-                        OP_LBU: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_load_en <= 1;
-                        end
-                        OP_LH: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_load_en <= 1;
-                        end
-                        OP_LHU: begin
-                            // TODO: fix
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_load_en <= 1;
-                        end
-                        OP_LW: begin
-                            mem_addr <= reg_file[rs2] + imm;
-                            mem_use_ram <= 1;
-                            mem_load_en <= 1;
-                        end
+                        // OP_LA: begin
+                        //     reg_file[rd] <= reg_file[rs2] + imm;
+                        // end
+                        // OP_LUI: begin
+                        //     reg_file[rd][31:16] <= imm;
+                        // end
+                        // OP_ECALL: begin
+                        // end
+                        // OP_SB: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_store <= reg_file[rd];
+                        //     mem_store_en <= 1;
+                        // end
+                        // OP_SH: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_store <= reg_file[rd];
+                        //     mem_store_en <= 1;
+                        // end
+                        // OP_SW: begin
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_store <= reg_file[rd];
+                        //     mem_store_en <= 1;
+                        // end
+                        // OP_LB: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_load_en <= 1;
+                        // end
+                        // OP_LBU: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_load_en <= 1;
+                        // end
+                        // OP_LH: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_load_en <= 1;
+                        // end
+                        // OP_LHU: begin
+                        //     // TODO: fix
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_load_en <= 1;
+                        // end
+                        // OP_LW: begin
+                        //     mem_addr <= reg_file[rs2] + imm;
+                        //     mem_use_ram <= 1;
+                        //     mem_load_en <= 1;
+                        // end
                     endcase
                 end
                 S_WBACK: begin
                     stage <= S_FETCH;
+                    mem_load_en <= 0;
+                    mem_store_en <= 0;
                     if (branch) begin
                         branch <= 0;
-                        if (alu_res > 0) begin
-                            pc <= reg_file[rs2] + imm;
+                        alu_en <= 0;
+                        if (alu_res) begin
                             reg_file[REG_RA] <= pc + 1;
+                            pc <= reg_file[rs2] + imm;
                         end
-                        else
+                        else begin
                             pc <= pc + 1;
+                        end
                     end
                     else begin
                         pc <= pc + 1;
-                        if (mem_store_en)
-                            mem_store_en <= 0;
-                        else if (mem_load_en & rd > 0) begin
-                            mem_load_en <= 0;
+                        if (alu_en & rd > 0) begin
+                            reg_file[rd] <= alu_res;
+                        end
+                        if (mem_load_en & rd > 0) begin
                             reg_file[rd] <= mem_load;
                         end
-                        else if (alu_en)  begin
-                            alu_en <= 0;
-                            if (rd > 0)
-                                reg_file[rd] <= alu_res;
-                        end
+                        alu_en <= 0;
                     end
                 end
             endcase
     end
-
-    assign debug[0] = { pc[29:0], stage};
-    assign debug[1] = ir;
-    assign debug[2] = reg_file[1];
-    assign debug[3] = reg_file[2];
-    assign debug[4] = reg_file[3];
-    assign debug[5] = mem_addr;
 endmodule
-

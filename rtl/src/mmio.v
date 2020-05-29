@@ -13,7 +13,6 @@ module MMIO
     input [31:0] in,
     output reg [31:0] out
 );
-
     reg [31:0] ram[RAM_WIDTH - 1:0];
     reg [31:0] rom[ROM_WIDTH - 1:0]; /* synthesis syn_romstyle = "block_rom" */;
 
