@@ -26,7 +26,7 @@ fn test_alias_directive() {
     &"
     .alias x s0
     .alias y s1
-    .alias z s2
+    .def   z s2
 
     li x 2
     li y 4
@@ -43,7 +43,7 @@ fn test_string_directive() {
   assert_vm_state(
     &"
     .zero 3
-    message: 
+    message:
       .string \"Hello\"
 
     lb s0 message
@@ -98,7 +98,7 @@ fn test_loads() {
     &"
     li s0 0x5678
     li s0 0x5678
-    label: 
+    label:
       lui s0 0x1234
       la s1 label
       la s2 (pc)
@@ -391,6 +391,25 @@ fn test_sgtz() {
 }
 
 #[test]
+fn test_ret() {
+  assert_vm_state(
+    &"
+    j main
+    sum:
+      add s0 s0 s1
+      ret
+    main:
+      li s0 10
+      li s1 32
+      j sum
+  ",
+    6,
+    [0, 3, 42, 32, 0, 0, 0, 0],
+    vec![0, 0, 0, 0, 0, 0, 0, 0],
+  );
+}
+
+#[test]
 fn test_beq() {
   assert_vm_state(
     &"
@@ -455,7 +474,7 @@ fn test_bgeu() {
     li s5 2
     nop
 
-    load: 
+    load:
       li s1 -42
 
     bgeu s1 s0 2(pc)
@@ -476,7 +495,7 @@ fn test_bltu() {
     li s5 2
     nop
 
-    load: 
+    load:
       li s1 -42
 
     bltu s0 s1 2(pc)
