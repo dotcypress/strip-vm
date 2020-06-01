@@ -56,6 +56,7 @@ Exp: Exp<'input> = {
 
 Dir: Directive<'input> = {
   ".alias" <ident:Ident> <reg:RegLit> => Directive::Alias(ident, reg),
+  ".def" <ident:Ident> <reg:RegLit> => Directive::Alias(ident, reg),
   ".equ" <ident:Ident> <imm:NumLit> => Directive::Constant(ident, imm as i16),
   ".zero" <num:NumLit> => Directive::Zero(num as i16),
   ".byte" <num:NumLit*> => Directive::Byte(num.iter().map(|i| *i as u8).collect()),
@@ -73,6 +74,7 @@ Op: Word<'input> = {
 
 PseudoOp: Vec<Word<'input>> = {
   "nop" => vec![Word::new(Opcode::ADD, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, None)],
+  "ret" => vec![Word::new(Opcode::BEQ, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::RA), 0, None)],
   "j" <addr:Addr> => vec![Word::new(Opcode::BEQ, RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), RegLink::Direct(Reg::Zero), 0, Some(addr))],
   "inc" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), 1, None)],
   "dec" <r1:Reg> => vec![Word::new(Opcode::ADDI, r1, r1, RegLink::Direct(Reg::Zero), -1, None)],
