@@ -99,7 +99,7 @@ impl Env for Environment {
     Ok(())
   }
 
-  fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
+  fn ecall(&mut self, ecall: u8, param: i32) -> Result<i32, Self::Error> {
     if self.trace_ecalls {
       println!("            ECALL              0x{:x}(0x{:x?})", ecall, param);
     }

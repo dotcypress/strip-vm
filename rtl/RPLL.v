@@ -1,12 +1,12 @@
-module RPLL (clkout, clkoutd, clkoutd3, clkin);
+module RPLL (clkout, clkoutd, clkin);
 
 output clkout;
 output clkoutd;
-output clkoutd3;
 input clkin;
 
 wire lock_o;
 wire clkoutp_o;
+wire clkoutd3_o;
 wire gw_gnd;
 
 assign gw_gnd = 1'b0;
@@ -16,7 +16,7 @@ rPLL rpll_inst (
     .LOCK(lock_o),
     .CLKOUTP(clkoutp_o),
     .CLKOUTD(clkoutd),
-    .CLKOUTD3(clkoutd3),
+    .CLKOUTD3(clkoutd3_o),
     .RESET(gw_gnd),
     .RESET_P(gw_gnd),
     .CLKIN(clkin),
@@ -31,11 +31,11 @@ rPLL rpll_inst (
 
 defparam rpll_inst.FCLKIN = "24";
 defparam rpll_inst.DYN_IDIV_SEL = "false";
-defparam rpll_inst.IDIV_SEL = 5;
+defparam rpll_inst.IDIV_SEL = 2;
 defparam rpll_inst.DYN_FBDIV_SEL = "false";
 defparam rpll_inst.FBDIV_SEL = 24;
 defparam rpll_inst.DYN_ODIV_SEL = "false";
-defparam rpll_inst.ODIV_SEL = 8;
+defparam rpll_inst.ODIV_SEL = 4;
 defparam rpll_inst.PSDA_SEL = "0000";
 defparam rpll_inst.DYN_DA_EN = "true";
 defparam rpll_inst.DUTYDA_SEL = "1000";
@@ -47,7 +47,7 @@ defparam rpll_inst.CLKFB_SEL = "internal";
 defparam rpll_inst.CLKOUT_BYPASS = "false";
 defparam rpll_inst.CLKOUTP_BYPASS = "false";
 defparam rpll_inst.CLKOUTD_BYPASS = "false";
-defparam rpll_inst.DYN_SDIV_SEL = 10;
+defparam rpll_inst.DYN_SDIV_SEL = 6;
 defparam rpll_inst.CLKOUTD_SRC = "CLKOUT";
 defparam rpll_inst.CLKOUTD3_SRC = "CLKOUT";
 defparam rpll_inst.DEVICE = "GW1N-1";

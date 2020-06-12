@@ -23,7 +23,7 @@ where
       ops: 0,
       psc: 0,
     });
-    vm.load(include_bytes!("../../docs/rainbow.bin")).unwrap();
+    vm.load(include_bytes!("../../docs/blinky.bin")).unwrap();
     LedStrip { vm, link }
   }
 
@@ -98,7 +98,7 @@ impl Env for Environment {
     Ok(())
   }
 
-  fn ecall(&mut self, ecall: i32, param: i32) -> Result<i32, Self::Error> {
+  fn ecall(&mut self, ecall: u8, param: i32) -> Result<i32, Self::Error> {
     match ecall {
       0 => {
         self.psc = param as u32;

@@ -30,8 +30,7 @@ pub struct Word<'a> {
   pub r1: RegLink<'a>,
   pub r2: RegLink<'a>,
   pub r3: RegLink<'a>,
-  pub imm: i16,
-  pub addr: Option<parser::Address<'a>>,
+  pub imm: Option<parser::Immediate<'a>>,
 }
 
 impl<'a> Word<'a> {
@@ -40,8 +39,7 @@ impl<'a> Word<'a> {
     r1: RegLink<'a>,
     r2: RegLink<'a>,
     r3: RegLink<'a>,
-    imm: i16,
-    addr: Option<parser::Address<'a>>,
+    imm: Option<parser::Immediate<'a>>,
   ) -> Self {
     Self {
       opcode,
@@ -49,7 +47,6 @@ impl<'a> Word<'a> {
       r2,
       r3,
       imm,
-      addr,
     }
   }
 }
@@ -57,7 +54,6 @@ impl<'a> Word<'a> {
 #[derive(Debug)]
 pub enum Exp<'a> {
   Word(Word<'a>),
-  Words(Vec<Word<'a>>),
   Label(&'a str),
   Comment(&'a str),
   Directive(Directive<'a>),
@@ -69,15 +65,29 @@ pub enum RegLink<'a> {
   Direct(Reg),
 }
 
+impl<'a> RegLink<'a> {
+  pub fn zero() -> Self {
+    RegLink::Direct(Reg::x0)
+  }
+}
+
 #[derive(Debug)]
-pub struct Address<'a> {
+pub struct Immediate<'a> {
   pub(crate) reg: RegLink<'a>,
-  pub(crate) offset: i16,
+  pub(crate) val: i16,
   pub(crate) ident: Option<&'a str>,
 }
 
-impl<'a> Address<'a> {
-  pub fn new(reg: RegLink<'a>, offset: i16, ident: Option<&'a str>) -> Self {
-    Self { reg, offset, ident }
+impl<'a> Immediate<'a> {
+  pub fn relative(reg: RegLink<'a>, val: i16, ident: Option<&'a str>) -> Self {
+    Self { reg, val, ident }
+  }
+
+  pub fn absolute(val: i16, ident: Option<&'a str>) -> Self {
+    Self {
+      reg: RegLink::zero(),
+      val,
+      ident,
+    }
   }
 }

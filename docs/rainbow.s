@@ -1,4 +1,3 @@
-# Total: 22604us, max fps: 44
 .alias psc s0
 .alias hue s1
 .alias sv s2

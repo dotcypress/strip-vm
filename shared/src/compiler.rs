@@ -10,7 +10,7 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
   let mut aliases: HashMap<&str, Reg> = HashMap::new();
   let mut consts: HashMap<&str, i16> = HashMap::new();
   let mut labels: HashMap<&str, i16> = HashMap::new();
-  let mut ops: Vec<&Word> = Vec::with_capacity(1024);
+  let mut words: Vec<&Word> = Vec::with_capacity(2048);
   let mut mem: Vec<u8> = Vec::with_capacity(4096);
   let mut prog_started = false;
 
@@ -18,16 +18,12 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
     match exp {
       Exp::Comment(_) => {}
       Exp::Label(label) => {
-        let offset = if prog_started { ops.len() } else { mem.len() };
+        let offset = if prog_started { words.len() } else { mem.len() };
         labels.insert(label, offset as i16);
       }
-      Exp::Word(op) => {
+      Exp::Word(word) => {
+        words.push(word);
         prog_started = true;
-        ops.push(op);
-      }
-      Exp::Words(words) => {
-        prog_started = true;
-        ops.extend(words);
       }
       Exp::Directive(dir) => {
         match dir {
@@ -60,11 +56,12 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
             }
           }
           Directive::IncBin(file) => {
-            let mut file = File::open(file).map_err(|_| Error::CompileError)?;
+            let mut file = File::open(file)
+              .map_err(|_| Error::CompilerError(CompilerError::FileReadFailed))?;
             let mut buf = Vec::new();
             file
               .read_to_end(&mut buf)
-              .map_err(|_| Error::CompileError)?;
+              .map_err(|_| Error::CompilerError(CompilerError::FileReadFailed))?;
             mem.extend(buf);
           }
         };
@@ -72,9 +69,17 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
     }
   }
 
-  if ops.is_empty() {
+  if words.is_empty() {
     return Ok(vec![]);
   }
+
+  let resolve_reg = |reg_link| match reg_link {
+    RegLink::Direct(reg) => Ok(reg),
+    RegLink::Alias(ident) => match aliases.get(ident) {
+      Some(reg) => Ok(*reg),
+      None => Err(Error::CompilerError(CompilerError::AliasNotFound)),
+    },
+  };
 
   let mut prog: Vec<u8> = Vec::with_capacity(4096);
   prog.extend(&[0xaf, 0xaf]);
@@ -85,44 +90,33 @@ pub fn compile(exprs: &[Exp]) -> Result<Vec<u8>, Error> {
   prog.extend(&mem);
 
   let mut buf = [0; 4];
-  for (pc, op) in ops.iter().enumerate() {
-    let (r3, imm) = if let Some(addr) = &op.addr {
-      let mut offset = addr.offset;
-      if let Some(ident) = addr.ident {
+  for (pc, word) in words.iter().enumerate() {
+    let (r3, imm) = if let Some(imm) = &word.imm {
+      let mut val = imm.val;
+      if let Some(ident) = imm.ident {
         if ident == "pc" {
-          offset += pc as i16;
-        } else if let Some(constant) = consts.get(ident) {
-          offset += constant;
-        } else if let Some(label) = labels.get(ident) {
-          offset += label;
+          val += pc as i16;
+        } else if let Some(offset) = consts.get(ident) {
+          val += offset;
+        } else if let Some(offset) = labels.get(ident) {
+          val += offset;
         } else {
-          return Err(Error::CompileError);
+          return Err(Error::CompilerError(CompilerError::AliasNotFound));
         }
       }
-      (addr.reg, (offset as i16).to_be_bytes())
+      (imm.reg, val)
     } else {
-      (op.r3, op.imm.to_be_bytes())
+      (word.r3, 0)
     };
 
-    let resolve_reg = |reg_link| match reg_link {
-      RegLink::Direct(reg) => Ok(reg),
-      RegLink::Alias(ident) => match aliases.get(ident) {
-        Some(reg) => Ok(*reg),
-        None => Err(Error::CompileError),
-      },
-    };
-
-    let r1 = resolve_reg(op.r1)?;
-    let r2 = resolve_reg(op.r2)?;
-    let r3 = resolve_reg(r3)?;
-
-    let mut word = (imm[0] as u32) << 24;
-    word |= (imm[1] as u32) << 16;
-    word |= (r3 as u32 & 0x7) << 13;
-    word |= (r2 as u32 & 0x7) << 10;
-    word |= (r1 as u32 & 0x7) << 7;
-    word |= op.opcode as u32 & 0x7f;
-    BigEndian::write_u32(&mut buf, word);
+    let inst = Instruction::new(
+      word.opcode,
+      resolve_reg(word.r1)?,
+      resolve_reg(word.r2)?,
+      resolve_reg(r3)?,
+      imm,
+    );
+    BigEndian::write_u32(&mut buf, inst.build());
     prog.extend(&buf);
   }
 

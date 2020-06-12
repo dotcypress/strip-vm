@@ -1,8 +1,3 @@
-# Strip size: 300 LED's
-# SPI transfer time: 7.246us,  max fps: 136Hz
-# VM spin time:      8.216us,  max fps: 126Hz
-# Total:             15.451us, max fps: 64Hz
-
 .alias frame s0
 .alias led_idx s1
 .alias luma s2
