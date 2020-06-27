@@ -4,7 +4,7 @@
 
 Register | Alias  | Description
 ---------|--------|----------------------------------------------
-         | pc     | Program counter (readonly, compile time only)
+none     | pc     | Program counter (readonly, compile time only)
 x0       | zero   | Hard-wired zero
 x1       | ra     | Return address
 x2       | sp     | Stack pointer
