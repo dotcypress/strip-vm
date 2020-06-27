@@ -2,15 +2,15 @@
 
 ## Registers
 
-Register| Alias  | Description
---------|--------|----------------------------------------------
--       | pc     | Program counter (readonly, compile time only)
-x0      | zero   | Hard-wired zero
-x1      | ra     | Return address
-x2      | sp     | Stack pointer
-x3-x10  | s0-s7  | Saved registers
-x11-x18 | a0-a7  | Function arguments
-x19-x31 | t0-t12 | Temporary registers
+Register | Alias  | Description
+---------|--------|----------------------------------------------
+         | pc     | Program counter (readonly, compile time only)
+x0       | zero   | Hard-wired zero
+x1       | ra     | Return address
+x2       | sp     | Stack pointer
+x3-x10   | s0-s7  | Saved registers
+x11-x18  | a0-a7  | Function arguments
+x19-x31  | t0-t12 | Temporary registers
 
 ## Assembler Directives
 
